@@ -73,6 +73,11 @@ module.exports = function (db) {
     const { name } = req.session.user;
     res.render('dashboard', { name });
   });
+  
+  router.get('/users', isLoggedIn, (req, res) => {
+    const { name } = req.session.user;
+    res.render('users', { name });
+  });
 
   return router;
 }
