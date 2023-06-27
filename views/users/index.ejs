@@ -19,14 +19,8 @@
     <!-- Custom styles for this template-->
     <link rel="stylesheet" href="/stylesheets/sb-admin-2.min.css" />
 
-    <style>
-        div#dataUsers_filter{
-            float: right !important;
-        }
-        div#dataUsers_paginate{
-            float: right !important;
-        }
-    </style>
+    <!-- Custom styles for this page -->
+    <link href="stylesheets/dataTables.bootstrap4.min.css" rel="stylesheet">
 </head>
 
 <body id="page-top">
@@ -119,6 +113,9 @@
     <script src="/javascripts/jquery.dataTables.min.js"></script>
     <script src="/javascripts/dataTables.bootstrap4.min.js"></script>
 
+    <!-- Page level custom scripts -->
+    <script src="/javascripts/datatables-demo.js"></script>
+
     <script>
         $(document).ready(() => {
             $('#dataUsers').DataTable({
@@ -161,7 +158,8 @@
                             </div>
                         </div>
                         `
-                        }
+                        },
+                        "orderable": false
                     }
                 ]
             })
