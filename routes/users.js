@@ -11,17 +11,11 @@ const isLoggedIn = function (req, res, next) {
   }
 };
 
-module.exports = function (pool) { // Assuming 'pool' is the database connection pool
+module.exports = function (pool) {
 
   router.get('/', isLoggedIn, (req, res) => {
-    pool.query("SELECT * FROM users", (err, data) => {
-      if (err) {
-        console.log(err);
-        return res.status(500).json({ error: "Error retrieving user data" });
-      }
-      const { name } = req.session.user;
-      res.render("users/index", { data: data.rows, name });
-    });
+    const { name } = req.session.user;
+    res.render("users/index", { name });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -52,7 +46,7 @@ module.exports = function (pool) { // Assuming 'pool' is the database connection
     res.json(response)
   })
 
-  router.get('/delete/:userid', async (req, res, next) => {
+  router.get('/delete/:userid', isLoggedIn, async (req, res, next) => {
     try {
       const { userid } = req.params;
       let sql = `DELETE FROM users WHERE userid = $1`
@@ -65,11 +59,12 @@ module.exports = function (pool) { // Assuming 'pool' is the database connection
     }
   })
 
-  router.get('/add', (req, res) => {
-    res.render("users/add");
+  router.get('/add', isLoggedIn, (req, res) => {
+    const { name } = req.session.user;
+    res.render("users/add", { name });
   });
 
-  router.post('/add', async (req, res) => {
+  router.post('/add', isLoggedIn, async (req, res) => {
     try {
       const { email, name, password, role } = req.body;
       const hash = await bcrypt.hash(password, saltRounds);
@@ -83,20 +78,21 @@ module.exports = function (pool) { // Assuming 'pool' is the database connection
     }
   });
 
-  router.get('/edit/:userid', async (req, res, next) => {
+  router.get('/edit/:userid', isLoggedIn, async (req, res, next) => {
     try {
+      const { name } = req.session.user;
       const { userid } = req.params
       const sql = 'SELECT * FROM users WHERE userid = $1';
       const data = await pool.query(sql, [userid])
       // console.log(data)
-      res.render('users/edit', { title: 'Edit Data', current: 'user', user: req.session.user, data: data.rows[0] })
+      res.render('users/edit', { data: data.rows[0], name })
     } catch (error) {
       console.log(error)
       res.status(500).json({ error: "Error Getting Data User" })
     }
   })
 
-  router.post('/edit/:userid', async (req, res, next) => {
+  router.post('/edit/:userid', isLoggedIn, async (req, res, next) => {
     try {
       const { userid } = req.params;
       const { email, name, role } = req.body;
