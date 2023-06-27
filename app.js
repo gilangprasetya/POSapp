@@ -16,7 +16,7 @@ const pool = new Pool({
 })
 
 var indexRouter = require('./routes/index')(pool);
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/users')(pool);
 
 var app = express();
 

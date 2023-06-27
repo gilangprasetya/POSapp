@@ -24,7 +24,7 @@ module.exports = function (db) {
   });
 
   router.post('/', (req, res) => {
-    db.query("select * from admin where email = $1", [req.body.email], (err, data) => {
+    db.query("select * from users where email = $1", [req.body.email], (err, data) => {
       if (data.rows.length == 0) {
         req.flash('errorMessage', "email doesn't exist")
         return res.redirect('/')
@@ -51,7 +51,7 @@ module.exports = function (db) {
       return res.redirect('/register')
     }
 
-    db.query("select * from admin where email = $1", [req.body.email], (err, data) => {
+    db.query("select * from users where email = $1", [req.body.email], (err, data) => {
       if (data.rows.length > 0) {
         req.flash('errorMessage', "email exist")
         return res.redirect('/register')
@@ -59,7 +59,7 @@ module.exports = function (db) {
       const password = req.body.password;
       bcrypt.hash(password, saltRounds, function (err, hash) {
         if (err) throw err;
-        db.query("insert into admin(name, email, password) values ($1, $2, $3)", [req.body.name, req.body.email, hash], (err, data) => {
+        db.query("insert into users(name, email, password) values ($1, $2, $3)", [req.body.name, req.body.email, hash], (err, data) => {
           if (err) {
             console.log(err);
           }
@@ -72,11 +72,6 @@ module.exports = function (db) {
   router.get('/dashboard', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
     res.render('dashboard', { name });
-  });
-  
-  router.get('/users', isLoggedIn, (req, res) => {
-    const { name } = req.session.user;
-    res.render('users', { name });
   });
 
   return router;

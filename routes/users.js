@@ -1,9 +1,87 @@
 var express = require('express');
 var router = express.Router();
+const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
-/* GET users listing. */
-router.get('/', function(req, res, next) {
-  res.send('respond with a resource');
-});
+const isLoggedIn = function (req, res, next) {
+  if (req.session.user) {
+    next();
+  } else {
+    res.redirect('/');
+  }
+};
 
-module.exports = router;
+module.exports = function (pool) { // Assuming 'pool' is the database connection pool
+
+  router.get('/', isLoggedIn, (req, res) => {
+    pool.query("SELECT * FROM users", (err, data) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json({ error: "Error retrieving user data" });
+      }
+      const { name } = req.session.user;
+      res.render("users/index", { data: data.rows, name });
+    });
+  });
+
+  router.get('/datatable', isLoggedIn, async (req, res, next) => {
+    let params = []
+
+    if (req.query.search.value) {
+      params.push(`name ilike '%${req.query.search.value}%'`)
+      params.push(`email ilike '%${req.query.search.value}%'`)
+    }
+
+    const limit = req.query.length
+    const offset = req.query.start
+    const sortBy = req.query.columns[req.query.order[0].column].data
+    const sortMode = req.query.order[0].dir
+    const sqlData = `SELECT * FROM users${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''} ORDER BY ${sortBy} ${sortMode} limit ${limit} offset ${offset} `
+    const sqlTotal = `SELECT COUNT(*) as total FROM users${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''}`
+    const total = await pool.query(sqlTotal)
+    const data = await pool.query(sqlData)
+    console.log(total.rows[0].total)
+
+    const response = {
+      "draw": Number(req.query.draw),
+      "recordsTotal": total.rows[0].total,
+      "recordsFiltered": total.rows[0].total,
+      "data": data.rows
+    }
+
+    res.json(response)
+  })
+
+  router.get('/delete/:userid', async (req, res, next) => {
+    try {
+      const { userid } = req.params;
+      let sql = `DELETE FROM users WHERE userid = $1`
+      await pool.query(sql, [userid]);
+      console.log('Delete User Success');
+      res.redirect('/users');
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ error: "Error Deleting Data User" })
+    }
+  })
+
+  router.get('/add', (req, res) => {
+    res.render("users/add");
+  });
+
+  router.post('/add', async (req, res) => {
+    try {
+      const { email, name, password, role } = req.body;
+      const hash = await bcrypt.hash(password, saltRounds);
+      let sql = `INSERT INTO users(email, name, password, role) VALUES ($1, $2, $3, $4)`;
+      await pool.query(sql, [email, name, hash, role]);
+      console.log('User added successfully');
+      res.redirect('/users');
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Error creating user data" });
+    }
+  });
+
+  return router;
+};
