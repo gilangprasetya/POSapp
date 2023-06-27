@@ -83,5 +83,32 @@ module.exports = function (pool) { // Assuming 'pool' is the database connection
     }
   });
 
+  router.get('/edit/:userid', async (req, res, next) => {
+    try {
+      const { userid } = req.params
+      const sql = 'SELECT * FROM users WHERE userid = $1';
+      const data = await pool.query(sql, [userid])
+      // console.log(data)
+      res.render('users/edit', { title: 'Edit Data', current: 'user', user: req.session.user, data: data.rows[0] })
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ error: "Error Getting Data User" })
+    }
+  })
+
+  router.post('/edit/:userid', async (req, res, next) => {
+    try {
+      const { userid } = req.params;
+      const { email, name, role } = req.body;
+      let sql = `UPDATE users SET email = $1, name =$2, role = $3 WHERE userid = $4`
+      await pool.query(sql, [email, name, role, userid]);
+      console.log('Data User Edited');
+      res.redirect('/users');
+    } catch (error) {
+      console.log(error)
+      res.status(500).json({ error: "Error Updating Data User" })
+    }
+  })
+
   return router;
 };
