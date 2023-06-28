@@ -1,7 +1,5 @@
 var express = require('express');
 var router = express.Router();
-const bcrypt = require('bcrypt');
-const saltRounds = 10;
 
 const isLoggedIn = function (req, res, next) {
   if (req.session.user) {
