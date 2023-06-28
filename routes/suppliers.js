@@ -20,10 +20,10 @@ module.exports = function (pool) {
     let params = []
 
     if (req.query.search.value) {
-      params.push(`supplierid ilike '%${req.query.search.value}%'`)
+      params.push(`supplierid::text ilike '%${req.query.search.value}%'`)
       params.push(`name ilike '%${req.query.search.value}%'`)
       params.push(`address ilike '%${req.query.search.value}%'`)
-      params.push(`phone::text ilike '%${req.query.search.value}%'`)
+      params.push(`phone ilike '%${req.query.search.value}%'`)
     }
 
     const limit = req.query.length
