@@ -72,7 +72,7 @@
                                                     Price</label>
                                                 <div class="col-sm-10">
                                                     <input type="number" class="form-control" id="purchaseprice"
-                                                        name="purchaseprice"  value="<%= data.purchaseprice %>">
+                                                        name="purchaseprice" value="<%= data.purchaseprice %>">
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -80,7 +80,7 @@
                                                     Price</label>
                                                 <div class="col-sm-10">
                                                     <input type="number" class="form-control" id="sellingprice"
-                                                        name="sellingprice"  value="<%= data.sellingprice %>">
+                                                        name="sellingprice" value="<%= data.sellingprice %>">
                                                 </div>
                                             </div>
                                             <div class="row mb-3">
@@ -88,16 +88,15 @@
                                                     Unit
                                                 </label>
                                                 <div class="col-sm-10">
-                                                    <div class="col-sm-10">
-                                                        <select name="unit" id="unit" class="form-control">
-                                                            <option value="" selected disabled>Select Unit</option>
-                                                            <% isiUnit.forEach(item=> { %>
-                                                                <option value="<%= item.unit %>" <%=item.unit==data.unit ? 'selected' : '' %>>
-                                                                    <%= item.unit %>
-                                                                </option>
-                                                                <% }) %>
-                                                        </select>
-                                                    </div>
+                                                    <select name="unit" id="unit" class="form-control">
+                                                        <option value="" selected disabled>Select Unit</option>
+                                                        <% isiUnit.forEach(item=> { %>
+                                                            <option value="<%= item.unit %>" <%=item.unit==data.unit
+                                                                ? 'selected' : '' %>>
+                                                                <%= item.unit %>
+                                                            </option>
+                                                            <% }) %>
+                                                    </select>
                                                 </div>
                                             </div>
                                             <div class="row mb-3 ">
@@ -114,7 +113,8 @@
                                             <div class="row mb-3 ">
                                                 <label for="preview" class="col-sm-2 col-form-label">Preview</label>
                                                 <div class="col-sm-3">
-                                                    <img id="imagepreview" src="/images/picture/<%= data.picture%>" alt="">
+                                                    <img id="imagepreview" src="/images/picture/<%= data.picture%>"
+                                                        alt="">
                                                 </div>
                                             </div>
                                         </div>
