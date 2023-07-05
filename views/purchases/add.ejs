@@ -132,19 +132,19 @@
                                             <label for="inputEmail3" class="col-sm-2 col-form-label">Total
                                                 Summary</label>
                                             <div class="col-sm-10">
-                                                <input type="number" class="form-control" id="totalsum" name="totalsum">
+                                                <input type="number" class="form-control" id="totalsum" name="totalsum" value="<%= data.totalsum %>" readonly>
                                             </div>
                                         </div>
                                         <div class="row mb-3">
                                             <label for="inputSupplier" class="col-sm-2 col-form-label">Supplier</label>
                                             <div class="col-sm-10">
                                                 <select name="suppliername" class="form-control" id="suppliername">
-                                                    <% supplier.forEach(item=> { %>
+                                                    <% supplier.forEach(item => { %>
                                                         <option>
                                                             <%= item.name %>
                                                         </option>
-                                                        <% }) %>
-                                                </select>
+                                                    <% }) %>
+                                                </select>                                                
                                             </div>
                                         </div>
                                         <button type="submit" class="btn btn-success btn-md btn-icon-split">
