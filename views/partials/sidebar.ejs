@@ -11,7 +11,7 @@
   <hr class="sidebar-divider my-0" />
 
   <!-- Nav Item - Dashboard -->
-  <li class="nav-item active">
+  <li class="nav-item <%= current === 'dashboard' ? 'active' : '' %>">
     <a class="nav-link" href="/dashboard">
       <i class="fa-solid fa-gauge-high"></i>
       <span>Dashboard</span></a>
@@ -24,7 +24,7 @@
   <div class="sidebar-heading">MASTER</div>
 
   <!-- Nav Item - Utilities Collapse Menu -->
-  <li class="nav-item">
+  <li class="nav-item <%= current === 'goodutils' ? 'active' : '' %>">
     <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseUtilities" aria-expanded="true"
       aria-controls="collapseUtilities">
       <i class="fas fa-fw fa-wrench"></i>
@@ -39,18 +39,19 @@
     </div>
   </li>
 
-  <li class="nav-item">
+  <li class="nav-item <%= current === 'suppliers' ? 'active' : '' %>">
     <a class="nav-link" href="/suppliers">
       <i class="fa-solid fa-link"></i>
       <span>Suppliers</span></a>
   </li>
 
-  <li class="nav-item">
+  <li class="nav-item <%= current === 'customers' ? 'active' : '' %>">
     <a class="nav-link" href="/customers">
       <i class="fa-solid fa-users"></i>
       <span>Customers</span></a>
   </li>
-  <li class="nav-item">
+
+  <li class="nav-item <%= current === 'users' ? 'active' : '' %>">
     <a class="nav-link" href="/users">
       <i class="fa-solid fa-user"></i>
       <span>Users</span>
@@ -64,14 +65,14 @@
   <div class="sidebar-heading">TRANSACTIONS</div>
 
   <!-- Nav Item - Tables -->
-  <li class="nav-item">
+  <li class="nav-item <%= current === 'purchases' ? 'active' : '' %>">
     <a class="nav-link" href="/purchases">
       <i class="fas fa-fw fa-table"></i>
       <span>Purchases</span></a>
   </li>
 
   <!-- Nav Item - Charts -->
-  <li class="nav-item">
+  <li class="nav-item <%= current === 'sales' ? 'active' : '' %>">
     <a class="nav-link" href="/sales">
       <i class="fas fa-fw fa-chart-area"></i>
       <span>Sales</span></a>

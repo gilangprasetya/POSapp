@@ -15,7 +15,7 @@ module.exports = function (pool) {
 
   router.get('/', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("users/index", { name });
+    res.render("users/index", { name, current: 'users' });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {

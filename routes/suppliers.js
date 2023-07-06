@@ -13,7 +13,7 @@ module.exports = function (pool) {
 
   router.get('/', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("suppliers/index", { name });
+    res.render("suppliers/index", { name, current: 'suppliers' });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {

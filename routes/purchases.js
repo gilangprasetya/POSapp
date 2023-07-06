@@ -12,7 +12,7 @@ const isLoggedIn = function (req, res, next) {
 module.exports = function (pool) {
     router.get('/', isLoggedIn, (req, res) => {
         const { name } = req.session.user;
-        res.render("purchases/index", { name });
+        res.render("purchases/index", { name, current: 'purchases' });
     });
 
     router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -26,7 +26,7 @@ module.exports = function (pool) {
         const offset = req.query.start;
         const sortBy = req.query.columns[req.query.order[0].column].data;
         const sortMode = req.query.order[0].dir;
-        const sqlData = `SELECT purchases.*, suppliers.* FROM purchases LEFT JOIN suppliers ON purchases.supplier = suppliers.supplierid${params.length > 0 ?` WHERE ${params.join(' OR ')}` : ''} ORDER BY ${sortBy} ${sortMode} LIMIT ${limit} OFFSET ${offset}`
+        const sqlData = `SELECT purchases.*, suppliers.* FROM purchases LEFT JOIN suppliers ON purchases.supplier = suppliers.supplierid${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''} ORDER BY ${sortBy} ${sortMode} LIMIT ${limit} OFFSET ${offset}`
         const sqlTotal = `SELECT COUNT(*) as total FROM purchases${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''}`;
         const total = await pool.query(sqlTotal);
         const data = await pool.query(sqlData);
@@ -143,7 +143,7 @@ module.exports = function (pool) {
             const supplierQuery = 'SELECT supplierid FROM suppliers WHERE name = $1';
             const supplierResult = await pool.query(supplierQuery, [suppliername]);
             const supplierid = supplierResult.rows[0].supplierid;
-            
+
             const sql = `UPDATE purchases SET totalsum = $1, supplier = $2, operator = $3 WHERE invoice = $4`;
             await pool.query(sql, [totalsum, supplierid, userid, invoice]);
             console.log('Success Updating Data Purchases');

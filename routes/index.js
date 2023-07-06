@@ -14,7 +14,7 @@ const isLoggedIn = function (req, res, next) {
 module.exports = function (db) {
   /* GET home page. */
   router.get('/', (req, res) => {
-    res.render('login', { errorMessage: req.flash('errorMessage') });
+    res.render('login', { errorMessage: req.flash('errorMessage'), current: 'dashboard' });
   });
 
   router.get('/logout', (req, res) => {
@@ -71,7 +71,7 @@ module.exports = function (db) {
 
   router.get('/dashboard', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render('dashboard', { name });
+    res.render('dashboard', { name, current: 'dashboard' });
   });
 
   return router;
