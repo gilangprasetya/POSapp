@@ -26,7 +26,7 @@ module.exports = function (pool) {
         const offset = req.query.start;
         const sortBy = req.query.columns[req.query.order[0].column].data;
         const sortMode = req.query.order[0].dir;
-        const sqlData = `SELECT * FROM purchases${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''} ORDER BY ${sortBy} ${sortMode} LIMIT ${limit} OFFSET ${offset}`;
+        const sqlData = `SELECT purchases.*, suppliers.* FROM purchases LEFT JOIN suppliers ON purchases.supplier = suppliers.supplierid${params.length > 0 ?` WHERE ${params.join(' OR ')}` : ''} ORDER BY ${sortBy} ${sortMode} LIMIT ${limit} OFFSET ${offset}`
         const sqlTotal = `SELECT COUNT(*) as total FROM purchases${params.length > 0 ? ` WHERE ${params.join(' OR ')}` : ''}`;
         const total = await pool.query(sqlTotal);
         const data = await pool.query(sqlData);
