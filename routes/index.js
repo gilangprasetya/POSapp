@@ -2,14 +2,7 @@ var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-
-const isLoggedIn = function (req, res, next) {
-  if (req.session.user) {
-    next()
-  } else {
-    res.redirect('/')
-  }
-}
+const { isLoggedIn } = require('../helpers/util')
 
 module.exports = function (db) {
   /* GET home page. */
@@ -71,7 +64,32 @@ module.exports = function (db) {
 
   router.get('/dashboard', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render('dashboard', { name, current: 'dashboard' });
+
+    // Perform the PostgreSQL queries
+    const purchaseQuery = 'SELECT SUM(totalsum) AS total_purchase FROM purchases;';
+    const salesQuery = 'SELECT SUM(totalsum) AS total_sales FROM sales;';
+
+    db.query(purchaseQuery, (purchaseErr, purchaseResult) => {
+      if (purchaseErr) {
+        console.log('Error executing purchase query:', purchaseErr);
+        req.flash('errorMessage', 'An error occurred');
+        return res.redirect('/');
+      }
+
+      const totalPurchase = purchaseResult.rows[0].total_purchase;
+
+      db.query(salesQuery, (salesErr, salesResult) => {
+        if (salesErr) {
+          console.log('Error executing sales query:', salesErr);
+          req.flash('errorMessage', 'An error occurred');
+          return res.redirect('/');
+        }
+
+        const totalSales = salesResult.rows[0].total_sales;
+
+        res.render('dashboard', { name, totalPurchase, totalSales, current: 'dashboard' });
+      });
+    });
   });
 
   return router;

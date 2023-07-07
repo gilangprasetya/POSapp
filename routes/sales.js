@@ -1,13 +1,6 @@
 var express = require('express');
 var router = express.Router();
-
-const isLoggedIn = function (req, res, next) {
-    if (req.session.user) {
-        next();
-    } else {
-        res.redirect('/');
-    }
-};
+const { isLoggedIn } = require('../helpers/util')
 
 module.exports = function (pool) {
     router.get('/', isLoggedIn, (req, res) => {
@@ -42,7 +35,7 @@ module.exports = function (pool) {
         res.json(response);
     });
 
-    router.get('/add', async (req, res, next) => {
+    router.get('/add', isLoggedIn, async (req, res, next) => {
         try {
             const { name, userid } = req.session.user;
             const sql = `INSERT INTO sales(invoice, totalsum, operator) VALUES(sales(), 0, $1) RETURNING *`;
@@ -54,7 +47,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/edit', async (req, res, next) => {
+    router.get('/edit', isLoggedIn, async (req, res, next) => {
         try {
             const { name, userid } = req.session.user;
             const sql = `INSERT INTO sales(invoice, totalsum, operator) VALUES(sales(), 0, $1) RETURNING *`;
@@ -66,7 +59,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/show/:invoice', async (req, res, next) => {
+    router.get('/show/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { name } = req.session.user;
             const { invoice } = req.params;
@@ -78,6 +71,7 @@ module.exports = function (pool) {
             const getCustomer = await pool.query(custSql)
             res.render('sales/add', {
                 name,
+                current: 'sales',
                 user: req.session.user,
                 data: getInvoice.rows[0],
                 barcode: getBarcode.rows,
@@ -89,7 +83,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.post('/show/:invoice', async (req, res, next) => {
+    router.post('/show/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { invoice } = req.params;
             const { totalsum, pay, change, customername } = req.body;
@@ -109,7 +103,7 @@ module.exports = function (pool) {
     });
 
 
-    router.get('/edit/:invoice', async (req, res, next) => {
+    router.get('/edit/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { name } = req.session.user;
             const { invoice } = req.params;
@@ -121,6 +115,7 @@ module.exports = function (pool) {
             const getCustomer = await pool.query(custSql)
             res.render('sales/edit', {
                 name,
+                current: 'sales',
                 user: req.session.user,
                 data: getInvoice.rows[0],
                 barcode: getBarcode.rows,
@@ -132,7 +127,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.post('/edit/:invoice', async (req, res, next) => {
+    router.post('/edit/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { invoice } = req.params;
             const { totalsum, pay, change, customername } = req.body;
@@ -152,7 +147,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/tables/:invoice', async (req, res, next) => {
+    router.get('/tables/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { invoice } = req.params;
             const sql = `SELECT saleitems.*, goods.name FROM saleitems LEFT JOIN goods ON saleitems.itemcode = goods.barcode WHERE saleitems.invoice = $1 ORDER BY saleitems.id`;
@@ -164,7 +159,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/goods/:barcode', async (req, res, next) => {
+    router.get('/goods/:barcode', isLoggedIn, async (req, res, next) => {
         try {
             const { barcode } = req.params;
             const sql = `SELECT * FROM goods WHERE barcode = $1`;
@@ -177,7 +172,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.post('/additems', async (req, res, next) => {
+    router.post('/additems', isLoggedIn, async (req, res, next) => {
         try {
             const { invoice, itemcode, quantity } = req.body
             const sqlSaleItem = `INSERT INTO saleitems(invoice, itemcode, quantity) VALUES($1,$2,$3)`
@@ -191,7 +186,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/deleteitems/:id', async (req, res, next) => {
+    router.get('/deleteitems/:id', isLoggedIn, async (req, res, next) => {
         try {
             const { id } = req.params;
             const sql = `DELETE FROM saleitems WHERE id = $1 RETURNING *`;
@@ -202,7 +197,7 @@ module.exports = function (pool) {
         }
     });
 
-    router.get('/delete/:invoice', async (req, res, next) => {
+    router.get('/delete/:invoice', isLoggedIn, async (req, res, next) => {
         try {
             const { invoice } = req.params;
             const sql = `DELETE FROM sales WHERE invoice = $1`;

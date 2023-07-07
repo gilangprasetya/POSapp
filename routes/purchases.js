@@ -1,13 +1,6 @@
 var express = require('express');
 var router = express.Router();
-
-const isLoggedIn = function (req, res, next) {
-    if (req.session.user) {
-        next();
-    } else {
-        res.redirect('/');
-    }
-};
+const { isLoggedIn } = require('../helpers/util')
 
 module.exports = function (pool) {
     router.get('/', isLoggedIn, (req, res) => {
@@ -77,6 +70,7 @@ module.exports = function (pool) {
             const getSupplier = await pool.query(supsql);
             res.render('purchases/add', {
                 name,
+                current: 'purchases',
                 user: req.session.user,
                 data: getInvoice.rows[0],
                 barcode: getBarcode.rows,
@@ -122,6 +116,7 @@ module.exports = function (pool) {
             const getSupplier = await pool.query(supsql);
             res.render('purchases/edit', {
                 name,
+                current: 'purchases',
                 user: req.session.user,
                 data: getInvoice.rows[0],
                 barcode: getBarcode.rows,
