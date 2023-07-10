@@ -51,12 +51,21 @@ module.exports = function (pool) {
 
   router.get('/add', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("units/add", { name, current: 'goodutils' });
+    res.render("units/add", { name, current: 'goodutils', errorMessage: req.flash('errorMessage') });
   });
 
   router.post('/add', isLoggedIn, async (req, res) => {
     try {
-      const { unit, name, note} = req.body;
+      const { unit, name, note } = req.body;
+
+      // Check if the unit already exists
+      const existingUnit = await pool.query('SELECT * FROM units WHERE unit = $1', [unit]);
+      if (existingUnit.rows.length > 0) {
+        req.flash('errorMessage', 'Unit already exists / Duplicate Unit');
+        res.redirect('/units/add');
+        return; // Stop further execution
+      }
+
       let sql = `INSERT INTO units(unit, name, note) VALUES ($1, $2, $3)`;
       await pool.query(sql, [unit, name, note]);
       res.redirect('/units');
@@ -69,29 +78,38 @@ module.exports = function (pool) {
   router.get('/edit/:unit', isLoggedIn, async (req, res, next) => {
     try {
       const { name } = req.session.user;
-      const { unit } = req.params
+      const { unit } = req.params;
       const sql = 'SELECT * FROM units WHERE unit = $1';
-      const data = await pool.query(sql, [unit])
-      // console.log(data)
-      res.render('units/edit', { data: data.rows[0], name, current: 'goodutils' })
+      const data = await pool.query(sql, [unit]);
+      res.render('units/edit', { data: data.rows[0], name, current: 'goodutils', errorMessage: req.flash('errorMessage') });
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: "Error Getting Data User" })
+      console.log(error);
+      res.status(500).json({ error: "Error Getting Data User" });
     }
-  })
+  });
 
   router.post('/edit/:unit', isLoggedIn, async (req, res, next) => {
     try {
       const { unit } = req.params;
       const { newUnit, name, note } = req.body;
-      let sql = `UPDATE units SET unit = $1, name = $2, note = $3 WHERE unit = $4`
+
+      // Check if the new unit already exists
+      const existingUnit = await pool.query('SELECT * FROM units WHERE unit = $1', [newUnit]);
+      if (existingUnit.rows.length > 0 && existingUnit.rows[0].unit !== unit) {
+        req.flash('errorMessage', 'Unit already exists / Duplicate Unit');
+        res.redirect(`/units/edit/${unit}`);
+        return; // Stop further execution
+      }
+
+      let sql = `UPDATE units SET unit = $1, name = $2, note = $3 WHERE unit = $4`;
       await pool.query(sql, [newUnit, name, note, unit]);
       res.redirect('/units');
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: "Error Updating Data User" })
+      console.log(error);
+      res.status(500).json({ error: "Error Updating Data User" });
     }
-  })
+  });
+
 
   return router;
 };

@@ -46,6 +46,11 @@
                                     <form action="" method="post">
                                         <div class="card-body">
                                             <div class="row mb-3">
+                                                <% if(errorMessage.length> 0){ %>
+                                                    <div class="alert alert-danger" role="alert">
+                                                        <%= errorMessage %>
+                                                    </div>
+                                                    <% } %>
                                                 <label for="inputUnit" class="col-sm-2 col-form-label">Unit</label>
                                                 <div class="col-sm-10">
                                                     <input type="unit" class="form-control" id="unit" name="newUnit"

@@ -64,7 +64,7 @@ module.exports = function (db) {
 
   router.get('/dashboard', isLoggedIn, async (req, res) => {
     try {
-      const name = req.session.user
+      const { name } = req.session.user;
       const { startDate, endDate } = req.query
       if (startDate && endDate) {
         const { rows: purchase } = await db.query(`SELECT SUM(totalsum) AS tp from purchases WHERE time BETWEEN $1 AND $2`, [startDate, endDate])
@@ -114,7 +114,7 @@ module.exports = function (db) {
           query: req.query // Add the `query` object here
         });
       } else if (startDate) {
-        const name = req.session.user
+        const { name } = req.session.user;
         const { rows: purchase } = await db.query(`SELECT SUM(totalsum) AS tp from purchases WHERE time >= $1`, [startDate])
         const { rows: sales } = await db.query(`SELECT SUM(totalsum) AS ts from sales WHERE time >= $1`, [startDate])
         const { rows: total } = await db.query(`SELECT COUNT(DISTINCT invoice) AS totalSales FROM sales WHERE time >= $1`, [startDate])
@@ -162,7 +162,7 @@ module.exports = function (db) {
           query: req.query
         })
       } else if (endDate) {
-        const name = req.session.user
+        const { name } = req.session.user;
         const { rows: purchase } = await db.query(`SELECT SUM(totalsum) AS tp from purchases WHERE time <= $1`, [endDate])
         const { rows: sales } = await db.query(`SELECT SUM(totalsum) AS ts from sales WHERE time <= $1`, [endDate])
         const { rows: total } = await db.query(`SELECT COUNT(DISTINCT invoice) AS totalSales FROM sales WHERE time <= $1`, [endDate])
@@ -210,7 +210,7 @@ module.exports = function (db) {
           query: req.query
         })
       } else {
-        const name = req.session.user
+        const { name } = req.session.user;
         const { rows: purchase } = await db.query(`SELECT SUM(totalsum) AS tp from purchases`)
         const { rows: sales } = await db.query(`SELECT SUM(totalsum) AS ts from sales`)
         const { rows: total } = await db.query(`SELECT COUNT(DISTINCT invoice) AS totalSales FROM sales`)

@@ -54,12 +54,21 @@ module.exports = function (pool) {
 
   router.get('/add', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("users/add", { name, current: 'users' });
+    res.render("users/add", { name, current: 'users', errorMessage: req.flash('errorMessage') });
   });
-
+  
   router.post('/add', isLoggedIn, async (req, res) => {
     try {
       const { email, name, password, role } = req.body;
+  
+      // Check if the email already exists
+      const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      if (existingUser.rows.length > 0) {
+        req.flash('errorMessage', 'Email already exists and cannot be duplicated.');
+        res.redirect('/users/add');
+        return; // Stop further execution
+      }
+  
       const hash = await bcrypt.hash(password, saltRounds);
       let sql = `INSERT INTO users(email, name, password, role) VALUES ($1, $2, $3, $4)`;
       await pool.query(sql, [email, name, hash, role]);
@@ -69,35 +78,43 @@ module.exports = function (pool) {
       console.log(error);
       res.status(500).json({ error: "Error creating user data" });
     }
-  });
+  });  
 
   router.get('/edit/:userid', isLoggedIn, async (req, res, next) => {
     try {
       const { name } = req.session.user;
-      const { userid } = req.params
+      const { userid } = req.params;
       const sql = 'SELECT * FROM users WHERE userid = $1';
-      const data = await pool.query(sql, [userid])
-      // console.log(data)
-      res.render('users/edit', { data: data.rows[0], name, current: 'users' })
+      const data = await pool.query(sql, [userid]);
+      res.render('users/edit', { data: data.rows[0], name, current: 'users', errorMessage: req.flash('errorMessage') });
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: "Error Getting Data User" })
+      console.log(error);
+      res.status(500).json({ error: "Error Getting Data User" });
     }
-  })
-
+  });
+  
   router.post('/edit/:userid', isLoggedIn, async (req, res, next) => {
     try {
       const { userid } = req.params;
       const { email, name, role } = req.body;
-      let sql = `UPDATE users SET email = $1, name =$2, role = $3 WHERE userid = $4`
+  
+      // Check if the email already exists
+      const existingUser = await pool.query('SELECT * FROM users WHERE email = $1 AND userid != $2', [email, userid]);
+      if (existingUser.rows.length > 0) {
+        req.flash('errorMessage', 'Email already exists and cannot be duplicated.');
+        res.redirect(`/users/edit/${userid}`);
+        return; // Stop further execution
+      }
+  
+      let sql = `UPDATE users SET email = $1, name =$2, role = $3 WHERE userid = $4`;
       await pool.query(sql, [email, name, role, userid]);
       console.log('Data User Edited');
       res.redirect('/users');
     } catch (error) {
-      console.log(error)
-      res.status(500).json({ error: "Error Updating Data User" })
+      console.log(error);
+      res.status(500).json({ error: "Error Updating Data User" });
     }
-  })
+  });  
 
   return router;
 };
