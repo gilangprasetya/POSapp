@@ -8,6 +8,7 @@
     <meta name="description" content="" />
     <meta name="author" content="" />
     <script src="https://kit.fontawesome.com/6ea2cb925f.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <title>POS - Dashboard</title>
 
     <!-- Custom fonts for this template-->
@@ -31,6 +32,46 @@
                                 <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
                             </div>
                         </div>
+
+                        <!-- Card Date -->
+                        <form action="" id="dateForm">
+                            <div class="card">
+                                <div class="card-header">
+                                    <span style="color:#4e73df; font-weight: bold;">
+                                        Date Settings
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label for="inputStartDate" class="form-label">Start Date</label>
+                                            <input type="date" class="form-control" id="startDate" name="startDate"
+                                                value="<%= query.startDate %>">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="inputEndDate" class="form-label">End Date</label>
+                                            <input type="date" class="form-control" id="endDate" name="endDate"
+                                                value="<%= query.endDate %>">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-md btn-success btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-solid fa-check"></i>
+                                        </span>
+                                        <span class="text">Query</span>
+                                    </button>
+                                    <a href="/" class="btn btn-md btn-warning btn-icon-split">
+                                        <span class="icon text-white-50">
+                                            <i class="fas fa-solid fa-arrow-left"></i>
+                                        </span>
+                                        <span class="text">Reset</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+
                         <div class="row" style="margin: 10px !important;">
                             <!-- Earnings (Monthly) Card Example -->
                             <div class="col-xl-3 col-md-6 mb-4">
@@ -81,8 +122,7 @@
                                                 </div>
                                                 <div class="row no-gutters align-items-center">
                                                     <div class="col-auto">
-                                                        <div class="h5 mb-0 font-weight-bold text-gray-800"
-                                                            id="earnings">
+                                                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalEarnings">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -103,7 +143,9 @@
                                             <div class="col mr-2">
                                                 <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
                                                     TOTAL SALES</div>
-                                                <div class="h5 mb-0 font-weight-bold text-gray-800">18</div>
+                                                <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                    <%= total.totalsales %>
+                                                </div>
                                             </div>
                                             <div class="col-auto">
                                                 <i class="fas fa-comments fa-2x text-gray-300"></i>
@@ -141,7 +183,7 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <div class="chart-area">
-                                            <canvas id="myAreaChart"></canvas>
+                                            <canvas id="myLineChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
@@ -172,7 +214,7 @@
                                     <!-- Card Body -->
                                     <div class="card-body">
                                         <div class="chart-pie pt-4 pb-2">
-                                            <canvas id="myPieChart"></canvas>
+                                            <canvas id="myDoughnutChart"></canvas>
                                         </div>
                                         <div class="mt-4 text-center small">
                                             <span class="mr-2">
@@ -204,8 +246,37 @@
                                                 </tr>
                                             </thead>
                                             <tbody>
-
+                                                <% tableData.forEach(item=> { %>
+                                                    <tr>
+                                                        <td>
+                                                            <%= item.monthly %>
+                                                        </td>
+                                                        <td>
+                                                            <%= item.expense %>
+                                                        </td>
+                                                        <td>
+                                                            <%= item.revenue %>
+                                                        </td>
+                                                        <td>
+                                                            <%= item.revenue - item.expense %>
+                                                        </td>
+                                                    </tr>
+                                                    <% }) %>
                                             </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th width="13%">Total</th>
+                                                    <th>
+                                                        <%= purchases.tp %>
+                                                    </th>
+                                                    <th>
+                                                        <%= sales.ts %>
+                                                    </th>
+                                                    <th>
+                                                        <%= sales.ts - purchases.tp %>
+                                                    </th>
+                                                </tr>
+                                            </tfoot>
                                         </table>
                                     </div>
                                 </div>
@@ -238,62 +309,239 @@
         <script src="/javascripts/chart-pie-demo.js"></script>
 
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.datatables.net/1.11.1/js/jquery.dataTables.min.js"></script>
+
 
         <script>
-            $(document).ready(function () {
-                // Fetch total purchases from the server
-                $.ajax({
-                    url: '/dashboard/totalPurchases',
-                    method: 'GET',
-                    success: function (data) {
-                        const totalPurchases = data.totalPurchase || 0;
-
-                        // Format total purchases as currency
-                        const formattedTotalPurchases = formatCurrency(totalPurchases);
-
-                        // Update the total purchases value on the page
-                        $('#totalPurchases').text(formattedTotalPurchases);
-
-                        // Fetch total sales from the server
-                        $.ajax({
-                            url: '/dashboard/totalSales',
-                            method: 'GET',
-                            success: function (data) {
-                                const totalSales = data.totalSales || 0;
-                                const earnings = totalSales - totalPurchases;
-
-                                // Format total sales as currency
-                                const formattedTotalSales = formatCurrency(totalSales);
-
-                                // Format earnings as currency
-                                const formattedEarnings = formatCurrency(earnings);
-
-                                // Update the total sales value on the page
-                                $('#totalSales').text(formattedTotalSales);
-
-                                // Update the earnings value on the page
-                                $('#earnings').text(formattedEarnings);
-                            },
-                            error: function (xhr, status, error) {
-                                console.log('Error fetching total sales:', error);
-                            }
-                        });
-                    },
-                    error: function (xhr, status, error) {
-                        console.log('Error fetching total purchases:', error);
-                    }
+            $(document).ready(() => {
+                $('#dataTable').DataTable({
+                    "lengthMenu": [3, 10, 100],
+                    "responsive": true,
+                    "aaSorting": []
                 });
 
-                function formatCurrency(value) {
-                    const formatter = new Intl.NumberFormat('id-ID', {
-                        style: 'currency',
-                        currency: 'IDR',
-                        currencyDisplay: 'symbol',
-                    });
-                    return formatter.format(value).replace('IDR', 'Rp. ')
-                }
-            })
+                lineChart();
+                doughnutChart();
+                csvReport();
 
+                // Format purchases.tp as currency and display in totalPurchases element
+                const purchasesTp = `<%= purchases.tp %>`;
+                const formattedTp = formatCurrency(purchasesTp);
+                $('#totalPurchases').text(formattedTp);
+                const salesTs = `<%= sales.ts %>`;
+                const formattedTs = formatCurrency(salesTs);
+                $('#totalSales').text(formattedTs);
+                const totalEarnings = `<%= sales.ts - purchases.tp %>`;
+                const formattedEarnings = formatCurrency(totalEarnings);
+                $('#totalEarnings').text(formattedEarnings);
+
+            });
+
+            function formatCurrency(value) {
+                const formatter = new Intl.NumberFormat('id-ID', {
+                    style: 'currency',
+                    currency: 'IDR',
+                    currencyDisplay: 'symbol',
+                });
+                return formatter.format(value).replace('IDR', 'Rp. ');
+            }
+            const csvReport = function () {
+                // Get the generate report button element
+                const generateReportButton = $('#generateReportButton');
+
+                // Add event listener for the button click
+                generateReportButton.on('click', function () {
+                    // Get the table element
+                    const table = $('#dataTable');
+
+                    // Create an empty array to store the CSV rows
+                    const rows = [];
+
+                    // Add header row to the rows array
+                    const headerRow = ['Month', 'Expense', 'Revenue', 'Earning'];
+                    rows.push(headerRow.join(','));
+                    // Iterate through each table row
+                    table.find('tbody tr').each(function () {
+                        const rowData = [];
+
+                        // Iterate through each cell in the row
+                        $(this).find('td').each(function () {
+                            // Push the cell's text content to the rowData array
+                            rowData.push($(this).text().trim());
+                        });
+                        // Join the rowData array with commas to create a CSV row
+                        const csvRow = rowData.join(',');
+
+                        // Push the CSV row to the rows array
+                        rows.push(csvRow);
+                    });
+                    // console.log(rows)
+
+                    // Join the rows array with line breaks to create the final CSV content
+                    const csvContent = rows.join('\n');
+
+                    // Create a download link for the CSV file
+                    const downloadLink = $('<a></a>', {
+                        href: 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvContent),
+                        download: 'report.csv',
+                        style: 'display: none;'
+                    });
+
+                    // Add the download link to the document and click it to trigger the download
+                    $('body').append(downloadLink);
+                    downloadLink[0].click();
+                    downloadLink.remove();
+                });
+            };
+
+            function number_format(number, decimals, dec_point, thousands_sep) {
+                // *     example: number_format(1234.56, 2, ',', ' ');
+                // *     return: '1 234,56'
+                number = (number + '').replace(',', '').replace(' ', '');
+                var n = !isFinite(+number) ? 0 : +number,
+                    prec = !isFinite(+decimals) ? 0 : Math.abs(decimals),
+                    sep = (typeof thousands_sep === 'undefined') ? ',' : thousands_sep,
+                    dec = (typeof dec_point === 'undefined') ? '.' : dec_point,
+                    s = '',
+                    toFixedFix = function (n, prec) {
+                        var k = Math.pow(10, prec);
+                        return '' + Math.round(n * k) / k;
+                    };
+                // Fix for IE parseFloat(0.55).toFixed(0) = 0;
+                s = (prec ? toFixedFix(n, prec) : '' + Math.round(n)).split('.');
+                if (s[0].length > 3) {
+                    s[0] = s[0].replace(/\B(?=(?:\d{3})+(?!\d))/g, sep);
+                }
+                if ((s[1] || '').length < prec) {
+                    s[1] = s[1] || '';
+                    s[1] += new Array(prec - s[1].length + 1).join('0');
+                }
+                return s.join(dec);
+            }
+
+            const lineChart = () => {
+                const getMonth = JSON.parse('<%- JSON.stringify(getMonth) %>');
+                const monthlyIncome = JSON.parse('<%- JSON.stringify(monthlyIncome) %>');
+                const ctx = $("#myLineChart");
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: getMonth,
+                        datasets: [{
+                            label: "Earning",
+                            data: monthlyIncome,
+                            borderColor: 'rgb(59,109,204)',
+                            lineTension: 0.3,
+                            backgroundColor: "rgba(78, 115, 223, 0.05)",
+                            pointRadius: 3,
+                            pointBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHoverRadius: 3,
+                            pointHoverBackgroundColor: "rgba(78, 115, 223, 1)",
+                            pointHoverBorderColor: "rgba(78, 115, 223, 1)",
+                            pointHitRadius: 10,
+                            pointBorderWidth: 2,
+                        }]
+                    },
+                    options: {
+                        layout: {
+                            padding: {
+                                left: 10,
+                                right: 25,
+                                top: 25,
+                                bottom: 0
+                            }
+                        },
+                        scales: {
+                            xAxes: [{
+                                time: {
+                                    unit: 'date'
+                                },
+                                gridLines: {
+                                    display: false,
+                                    drawBorder: false
+                                },
+                                ticks: {
+                                    maxTicksLimit: 7
+                                }
+                            }],
+                            yAxes: [{
+                                ticks: {
+                                    maxTicksLimit: 5,
+                                    padding: 10,
+                                    // Include a dollar sign in the ticks
+                                    callback: function (value, index, values) {
+                                        return 'Rp ' + number_format(value);
+                                    }
+                                },
+                                gridLines: {
+                                    color: "rgb(234, 236, 244)",
+                                    zeroLineColor: "rgb(234, 236, 244)",
+                                    drawBorder: false,
+                                    borderDash: [2],
+                                    zeroLineBorderDash: [2]
+                                }
+                            }],
+                        },
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        titleMarginBottom: 10,
+                        titleFontColor: '#6e707e',
+                        titleFontSize: 14,
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        intersect: false,
+                        mode: 'index',
+                        caretPadding: 10,
+                        callbacks: {
+                            label: function (tooltipItem, chart) {
+                                var datasetLabel = chart.datasets[tooltipItem.datasetIndex].label || '';
+                                return datasetLabel + ': Rp' + number_format(tooltipItem.yLabel);
+                            }
+                        }
+                    }
+                })
+            }
+            const doughnutChart = () => {
+                const direct = '<%- direct %>'
+                const customer = '<%- customer %>'
+                const ctx = $("#myDoughnutChart")
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['customer', 'direct'],
+                        datasets: [{
+                            data: [customer, direct],
+                            backgroundColor: ["rgb(76,118,216)", "rgb(0,200,144)"]
+                        }]
+                    },
+                    options: {
+                        maintainAspectRatio: false,
+                        tooltips: {
+                            backgroundColor: "rgb(255,255,255)",
+                            bodyFontColor: "#858796",
+                            borderColor: '#dddfeb',
+                            borderWidth: 1,
+                            xPadding: 15,
+                            yPadding: 15,
+                            displayColors: false,
+                            caretPadding: 10,
+                        },
+                        legend: {
+                            display: false
+                        },
+                        cutoutPercentage: 80,
+                    }
+                })
+            };
         </script>
 
 </body>
