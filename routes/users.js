@@ -2,13 +2,13 @@ var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { isLoggedIn } = require('../helpers/util')
+const { isLoggedIn, isAdmin } = require('../helpers/util')
 
 module.exports = function (pool) {
 
-  router.get('/', isLoggedIn, (req, res) => {
+  router.get('/', isLoggedIn, isAdmin, (req, res) => {
     const { name } = req.session.user;
-    res.render("users/index", { name, current: 'users' });
+    res.render("users/index", { name, current: 'users', user: req.session.user });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -54,7 +54,7 @@ module.exports = function (pool) {
 
   router.get('/add', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("users/add", { name, current: 'users', errorMessage: req.flash('errorMessage') });
+    res.render("users/add", { name, current: 'users', errorMessage: req.flash('errorMessage'), user: req.session.user });
   });
 
   router.post('/add', isLoggedIn, async (req, res) => {
@@ -86,7 +86,7 @@ module.exports = function (pool) {
       const { userid } = req.params;
       const sql = 'SELECT * FROM users WHERE userid = $1';
       const data = await pool.query(sql, [userid]);
-      res.render('users/edit', { data: data.rows[0], name, current: 'users', errorMessage: req.flash('errorMessage') });
+      res.render('users/edit', { data: data.rows[0], name, current: 'users', errorMessage: req.flash('errorMessage'), user: req.session.user });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Error Getting Data User" });
@@ -123,7 +123,7 @@ module.exports = function (pool) {
       const successMessage = req.flash('successMessage');
       const sql = 'SELECT * FROM users WHERE userid = $1';
       const data = await pool.query(sql, [userid]);
-      res.render('users/profile', { data: data.rows[0], name, current: 'users', successMessage: successMessage.length ? successMessage[0] : null, errorMessage: req.flash('errorMessage') });
+      res.render('users/profile', { data: data.rows[0], name, current: 'users', successMessage: successMessage.length ? successMessage[0] : null, errorMessage: req.flash('errorMessage'), user: req.session.user });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Error Getting User Profile" });
@@ -156,7 +156,7 @@ module.exports = function (pool) {
   router.get('/changepassword', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
     const successMessage = req.flash('successMessage');
-    res.render("users/changepassword", { name, current: 'users', successMessage: successMessage.length ? successMessage[0] : null, errorMessage: req.flash('errorMessage') });
+    res.render("users/changepassword", { name, current: 'users', successMessage: successMessage.length ? successMessage[0] : null, errorMessage: req.flash('errorMessage'), user: req.session.user });
   });
 
   router.post('/changepassword', isLoggedIn, async (req, res) => {

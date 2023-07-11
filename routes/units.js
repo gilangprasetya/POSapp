@@ -1,12 +1,12 @@
 var express = require('express');
 var router = express.Router();
-const { isLoggedIn } = require('../helpers/util')
+const { isLoggedIn, isAdmin } = require('../helpers/util')
 
 module.exports = function (pool) {
 
-  router.get('/', isLoggedIn, (req, res) => {
+  router.get('/', isLoggedIn, isAdmin, (req, res) => {
     const { name } = req.session.user;
-    res.render("units/index", { name, current: 'goodutils' });
+    res.render("units/index", { name, current: 'goodutils', user: req.session.user });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -51,7 +51,7 @@ module.exports = function (pool) {
 
   router.get('/add', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("units/add", { name, current: 'goodutils', errorMessage: req.flash('errorMessage') });
+    res.render("units/add", { name, current: 'goodutils', errorMessage: req.flash('errorMessage'), user: req.session.user });
   });
 
   router.post('/add', isLoggedIn, async (req, res) => {
@@ -81,7 +81,7 @@ module.exports = function (pool) {
       const { unit } = req.params;
       const sql = 'SELECT * FROM units WHERE unit = $1';
       const data = await pool.query(sql, [unit]);
-      res.render('units/edit', { data: data.rows[0], name, current: 'goodutils', errorMessage: req.flash('errorMessage') });
+      res.render('units/edit', { data: data.rows[0], name, current: 'goodutils', errorMessage: req.flash('errorMessage'), user: req.session.user });
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Error Getting Data User" });

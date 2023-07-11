@@ -5,7 +5,7 @@ const { isLoggedIn } = require('../helpers/util')
 module.exports = function (pool) {
     router.get('/', isLoggedIn, (req, res) => {
         const { name } = req.session.user;
-        res.render("sales/index", { name, current: 'sales' });
+        res.render("sales/index", { name, current: 'sales', user: req.session.user });
     });
 
     router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -71,6 +71,7 @@ module.exports = function (pool) {
             const getCustomer = await pool.query(custSql)
             res.render('sales/add', {
                 name,
+                user: req.session.user,
                 current: 'sales',
                 user: req.session.user,
                 data: getInvoice.rows[0],
@@ -115,6 +116,7 @@ module.exports = function (pool) {
             const getCustomer = await pool.query(custSql)
             res.render('sales/edit', {
                 name,
+                user: req.session.user,
                 current: 'sales',
                 user: req.session.user,
                 data: getInvoice.rows[0],
@@ -164,7 +166,6 @@ module.exports = function (pool) {
             const { barcode } = req.params;
             const sql = `SELECT * FROM goods WHERE barcode = $1`;
             const data = await pool.query(sql, [barcode]);
-            console.log('Showing Data Barcode Success');
             res.json(data.rows[0]);
         } catch (error) {
             console.log(error);

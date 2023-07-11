@@ -2,12 +2,12 @@ var express = require('express');
 var router = express.Router();
 const bcrypt = require('bcrypt');
 const saltRounds = 10;
-const { isLoggedIn } = require('../helpers/util')
+const { isLoggedIn, isAdmin } = require('../helpers/util')
 
 module.exports = function (db) {
   /* GET home page. */
   router.get('/', (req, res) => {
-    res.render('login', { errorMessage: req.flash('errorMessage'), current: 'dashboard' });
+    res.render('login', { errorMessage: req.flash('errorMessage'), current: 'dashboard', user: req.session.user });
   });
 
   router.get('/logout', (req, res) => {
@@ -28,11 +28,17 @@ module.exports = function (db) {
           return res.redirect('/')
         }
 
-        req.session.user = data.rows[0]
-        res.redirect('/dashboard')
+        req.session.user = data.rows[0];
+
+        // Check user role and redirect accordingly
+        if (req.session.user.role === 'admin') {
+          res.redirect('/dashboard');
+        } else if (req.session.user.role === 'operator') {
+          res.redirect('/sales');
+        }
       });
-    })
-  })
+    });
+  });
 
   router.get('/register', (req, res) => {
     res.render('register', { errorMessage: req.flash('errorMessage') });
@@ -62,7 +68,7 @@ module.exports = function (db) {
     })
   })
 
-  router.get('/dashboard', isLoggedIn, async (req, res) => {
+  router.get('/dashboard', isLoggedIn, isAdmin, async (req, res) => {
     try {
       const { name } = req.session.user;
       const { startDate, endDate } = req.query
@@ -102,6 +108,7 @@ module.exports = function (db) {
         // console.log(data)
         res.render('dashboard', {
           name,
+          user: req.session.user,
           current: 'dashboard',
           purchases: purchase[0],
           sales: sales[0],
@@ -150,6 +157,7 @@ module.exports = function (db) {
         // console.log(data)
         res.render('dashboard', {
           name,
+          user: req.session.user,
           current: 'dashboard',
           purchases: purchase[0],
           sales: sales[0],
@@ -198,6 +206,7 @@ module.exports = function (db) {
         // console.log(data)
         res.render('dashboard', {
           name,
+          user: req.session.user,
           current: 'dashboard',
           purchases: purchase[0],
           sales: sales[0],
@@ -247,6 +256,7 @@ module.exports = function (db) {
         // console.log(data)
         res.render('dashboard', {
           name,
+          user: req.session.user,
           current: 'dashboard',
           purchases: purchase[0],
           sales: sales[0],

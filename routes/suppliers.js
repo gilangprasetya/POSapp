@@ -6,7 +6,7 @@ module.exports = function (pool) {
 
   router.get('/', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("suppliers/index", { name, current: 'suppliers' });
+    res.render("suppliers/index", { name, current: 'suppliers', user: req.session.user });
   });
 
   router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -52,7 +52,7 @@ module.exports = function (pool) {
 
   router.get('/add', isLoggedIn, (req, res) => {
     const { name } = req.session.user;
-    res.render("suppliers/add", { name, current: 'suppliers' });
+    res.render("suppliers/add", { name, current: 'suppliers', user: req.session.user });
   });
 
   router.post('/add', isLoggedIn, async (req, res) => {
@@ -74,7 +74,7 @@ module.exports = function (pool) {
       const sql = 'SELECT * FROM suppliers WHERE supplierid = $1';
       const data = await pool.query(sql, [supplierid])
       // console.log(data)
-      res.render('suppliers/edit', { data: data.rows[0], name, current: 'suppliers' })
+      res.render('suppliers/edit', { data: data.rows[0], name, current: 'suppliers', user: req.session.user })
     } catch (error) {
       console.log(error)
       res.status(500).json({ error: "Error Getting Data User" })

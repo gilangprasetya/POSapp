@@ -5,7 +5,7 @@ const { isLoggedIn } = require('../helpers/util')
 module.exports = function (pool) {
     router.get('/', isLoggedIn, (req, res) => {
         const { name } = req.session.user;
-        res.render("purchases/index", { name, current: 'purchases' });
+        res.render("purchases/index", { name, current: 'purchases', user: req.session.user });
     });
 
     router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -70,6 +70,7 @@ module.exports = function (pool) {
             const getSupplier = await pool.query(supsql);
             res.render('purchases/add', {
                 name,
+                user: req.session.user,
                 current: 'purchases',
                 user: req.session.user,
                 data: getInvoice.rows[0],
@@ -116,6 +117,7 @@ module.exports = function (pool) {
             const getSupplier = await pool.query(supsql);
             res.render('purchases/edit', {
                 name,
+                user: req.session.user,
                 current: 'purchases',
                 user: req.session.user,
                 data: getInvoice.rows[0],

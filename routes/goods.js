@@ -1,13 +1,13 @@
 var express = require('express');
 var router = express.Router();
 var path = require('path');
-const { isLoggedIn } = require('../helpers/util')
+const { isLoggedIn, isAdmin } = require('../helpers/util')
 
 module.exports = function (pool) {
 
-    router.get('/', isLoggedIn, (req, res) => {
+    router.get('/', isLoggedIn, isAdmin, (req, res) => {
         const { name } = req.session.user;
-        res.render("goods/index", { name, current: 'goodutils' });
+        res.render("goods/index", { name, current: 'goodutils', user: req.session.user });
     });
 
     router.get('/datatable', isLoggedIn, async (req, res, next) => {
@@ -55,7 +55,7 @@ module.exports = function (pool) {
         const { name } = req.session.user;
         const sql = `SELECT * FROM units`
         const data = await pool.query(sql)
-        res.render("goods/add", { isiUnit: data.rows, data: {}, name, current: 'goodutils' });
+        res.render("goods/add", { isiUnit: data.rows, data: {}, name, current: 'goodutils', user: req.session.user });
     });
 
     router.post('/add', isLoggedIn, async (req, res) => {
@@ -91,7 +91,7 @@ module.exports = function (pool) {
             const sql2 = 'SELECT * FROM units';
             const data = await pool.query(sql, [barcode])
             const unit = await pool.query(sql2)
-            res.render('goods/edit', { data: data.rows[0], isiUnit: unit.rows, name, current: 'goodutils' })
+            res.render('goods/edit', { data: data.rows[0], isiUnit: unit.rows, name, current: 'goodutils', user: req.session.user })
         } catch (error) {
             console.log(error)
             res.status(500).json({ error: "Error Getting Data User" })
