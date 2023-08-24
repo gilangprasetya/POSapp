@@ -18,7 +18,7 @@
 npm run dev
 ```
 
-# SCREENSHOT
+# Screenshoot
 
 ### LOGIN
 ![Login](https://github.com/gilangprasetya/POSapp/assets/17922551/da23e080-ccf3-474b-988e-1ca8490a9402)
